@@ -1,3 +1,18 @@
+# Deployment Guide
+
+## GitHub Pages
+
+1. Create a new repository on GitHub.
+2. Add the remote to your local repository:
+   ```bash
+   git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
+   ```
+3. Push your code:
+   ```bash
+   git push -u origin main
+   ```
+4. Go to Settings > Pages in your GitHub repository and select the `main` branch.
+
 # 🚀 Production Deployment Checklist
 
 ## ✅ Pre-Deployment Tasks

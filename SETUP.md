@@ -1,3 +1,22 @@
+# Setup Guide
+
+## Initial Setup
+
+```bash
+git init
+git add .
+git commit -m "Initial commit"
+```
+
+## Connecting to GitHub
+
+1. Create a repository on GitHub.
+2. Run:
+   ```bash
+   git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
+   git push -u origin main
+   ```
+
 # 🚀 Setup & Deployment Guide
 
 ## 📦 What You Have

@@ -152,7 +152,12 @@ This is a static site - no backend required! Deploy anywhere:
 
 **Quick Deploy Options:**
 
-- **GitHub Pages:** Push to GitHub, enable Pages in settings
+- **GitHub Pages:** Create a repository on GitHub, add it as a remote, and push:
+  ```bash
+  git remote add origin https://github.com/USERNAME/REPO_NAME.git
+  git push -u origin main
+  ```
+  Then enable Pages in settings.
 - **Netlify:** Drag & drop the folder at netlify.com/drop
 - **Vercel:** Run `vercel` in the project folder
 - **Local:** Just open `index.html` in a browser!
