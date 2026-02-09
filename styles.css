@@ -427,6 +427,65 @@ li.CodeMirror-hint-active {
   color: #50fa7b;
 }
 
+.btn-reset {
+  background: transparent;
+  border: 1px solid #6272a4;
+  color: #6272a4;
+  padding: 8px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-left: 8px;
+  transition: all 0.2s;
+}
+.btn-reset:hover {
+  border-color: #ff5555;
+  color: #ff5555;
+}
+
+.progress-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.btn-export, .btn-import, .btn-clear {
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: all 0.2s;
+}
+.btn-export {
+  background: linear-gradient(135deg, #50fa7b, #3ae374);
+  color: #282a36;
+  border: none;
+}
+.btn-export:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(80, 250, 123, 0.3);
+}
+.btn-import {
+  background: transparent;
+  border: 2px solid #bd93f9;
+  color: #bd93f9;
+}
+.btn-import:hover {
+  background: rgba(189, 147, 249, 0.1);
+  transform: translateY(-2px);
+}
+.btn-clear {
+  background: transparent;
+  border: 2px solid #ff5555;
+  color: #ff5555;
+}
+.btn-clear:hover {
+  background: rgba(255, 85, 85, 0.1);
+  transform: translateY(-2px);
+}
+
 @media (max-width: 768px) {
   .container {
     padding: 20px;

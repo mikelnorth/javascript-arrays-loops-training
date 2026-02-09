@@ -184,6 +184,11 @@ for (let i = 0; i < numbers.length; i++) {
           <div class="progress-fill" id="progressBar"></div>
         </div>
         <p id="progressText">0 of 0 exercises completed</p>
+        <div class="progress-buttons">
+          <button onclick="exportProgress()" class="btn-export">Export Progress (.js)</button>
+          <button onclick="importProgress()" class="btn-import">Import Progress</button>
+          <button onclick="clearAllProgress()" class="btn-clear">Clear All Progress</button>
+        </div>
       </div>
     </div>
 

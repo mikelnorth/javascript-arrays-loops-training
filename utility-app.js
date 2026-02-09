@@ -1,4 +1,10 @@
 // Main application logic for advanced array methods training
+const MODULE_NAME = "utilityArrays";
+const PROGRESS_KEY = "advancedArraysProgress";
+function debounce(fn, delay) {
+  let timer;
+  return function() { clearTimeout(timer); timer = setTimeout(fn, delay); };
+}
 let completedExercises = new Set();
 let editors = {}; // Store CodeMirror instances
 
@@ -43,6 +49,7 @@ function loadExercises() {
                 <textarea id="code-${exercise.id}">${exercise.starterCode}</textarea>
             </div>
             <button onclick="runExercise(${exercise.id})" class="btn-run">Run Exercise</button>
+            <button onclick="resetExercise(${exercise.id})" class="btn-reset">Reset</button>
             <button onclick="toggleHint(${exercise.id})" class="hint-button">💡 Show Hint</button>
             <button onclick="toggleSolutionHint(${exercise.id})" class="solution-hint-button" id="solution-btn-${exercise.id}" style="display: none;">🔑 Show Solution Hint</button>
             <div id="hint-${exercise.id}" class="hint">${exercise.hint}</div>
@@ -146,6 +153,17 @@ function initCodeEditor(exerciseId) {
   // Ensure editor is focused and ready for input
   editor.refresh();
   editors[exerciseId] = editor;
+
+  // Restore saved code
+  var savedCode = localStorage.getItem(MODULE_NAME + '_code_' + exerciseId);
+  if (savedCode !== null) {
+    editor.setValue(savedCode);
+  }
+
+  // Auto-save on change (debounced 500ms)
+  editor.on("change", debounce(function() {
+    localStorage.setItem(MODULE_NAME + '_code_' + exerciseId, editor.getValue());
+  }, 500));
 }
 
 // Initialize playground editor
@@ -236,6 +254,17 @@ function initPlaygroundEditor() {
   // Ensure editor is focused and ready for input
   editor.refresh();
   editors["playground"] = editor;
+
+  // Restore saved playground code
+  var savedPlayground = localStorage.getItem(MODULE_NAME + '_playground');
+  if (savedPlayground !== null) {
+    editor.setValue(savedPlayground);
+  }
+
+  // Auto-save playground on change (debounced 500ms)
+  editor.on("change", debounce(function() {
+    localStorage.setItem(MODULE_NAME + '_playground', editor.getValue());
+  }, 500));
 }
 
 // Run a specific exercise
@@ -480,17 +509,126 @@ function escapeHtml(text) {
   return text.replace(/[&<>"']/g, (m) => map[m]);
 }
 
+// Reset an exercise to its starter code
+function resetExercise(exerciseId) {
+  const exercise = exercises.find(e => e.id === exerciseId);
+  if (exercise && editors[exerciseId]) {
+    editors[exerciseId].setValue(exercise.starterCode);
+    localStorage.removeItem(MODULE_NAME + '_code_' + exerciseId);
+  }
+}
+
+// Export all exercise progress as a downloadable .js file
+function exportProgress() {
+  const lines = [];
+  const title = document.querySelector('h1').textContent;
+  lines.push('// ' + '='.repeat(50));
+  lines.push('// ' + title + ' - My Solutions');
+  lines.push('// Exported: ' + new Date().toLocaleDateString());
+  lines.push('// ' + '='.repeat(50));
+  lines.push('');
+
+  exercises.forEach(function(exercise) {
+    const code = localStorage.getItem(MODULE_NAME + '_code_' + exercise.id)
+                 || exercise.starterCode;
+    lines.push('// --- ' + exercise.title + ' ---');
+    const instruction = exercise.instruction.replace(/<[^>]*>/g, '');
+    lines.push('// ' + instruction);
+    lines.push(code);
+    lines.push('');
+  });
+
+  const playgroundCode = localStorage.getItem(MODULE_NAME + '_playground');
+  if (playgroundCode) {
+    lines.push('// === Playground Code ===');
+    lines.push(playgroundCode);
+    lines.push('');
+  }
+
+  const blob = new Blob([lines.join('\n')], { type: 'text/javascript' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = MODULE_NAME + '-solutions.js';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// Import progress from a previously exported .js file
+function importProgress() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.js';
+  input.onchange = function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const content = e.target.result;
+      const sections = content.split(/\/\/ --- /);
+      sections.forEach(function(section) {
+        if (!section.trim()) return;
+        const lines = section.split('\n');
+        const titleLine = lines[0];
+        const title = titleLine.replace(/ ---.*$/, '').trim();
+        const exercise = exercises.find(ex => ex.title === title);
+        if (exercise) {
+          const codeLines = lines.slice(1);
+          while (codeLines.length && codeLines[0].trimStart().startsWith('// ')) codeLines.shift();
+          while (codeLines.length && !codeLines[codeLines.length - 1].trim()) codeLines.pop();
+          const code = codeLines.join('\n');
+          if (code.trim()) {
+            localStorage.setItem(MODULE_NAME + '_code_' + exercise.id, code);
+            if (editors[exercise.id]) {
+              editors[exercise.id].setValue(code);
+            }
+          }
+        }
+      });
+
+      const playgroundParts = content.split('// === Playground Code ===');
+      if (playgroundParts.length > 1) {
+        const playgroundCode = playgroundParts[1].trim();
+        if (playgroundCode) {
+          localStorage.setItem(MODULE_NAME + '_playground', playgroundCode);
+          if (editors['playground']) {
+            editors['playground'].setValue(playgroundCode);
+          }
+        }
+      }
+      alert('Progress imported successfully!');
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+// Clear all progress for this module
+function clearAllProgress() {
+  if (!confirm('Are you sure? This will reset ALL exercises to starter code and clear completion status.')) return;
+  exercises.forEach(function(ex) {
+    localStorage.removeItem(MODULE_NAME + '_code_' + ex.id);
+    if (editors[ex.id]) {
+      editors[ex.id].setValue(ex.starterCode);
+    }
+  });
+  localStorage.removeItem(MODULE_NAME + '_playground');
+  localStorage.removeItem(PROGRESS_KEY);
+  completedExercises = new Set();
+  updateProgress();
+  alert('All progress cleared.');
+}
+
 // Save progress to localStorage
 window.addEventListener("beforeunload", () => {
   localStorage.setItem(
-    "advancedArraysProgress",
+    PROGRESS_KEY,
     JSON.stringify([...completedExercises]),
   );
 });
 
 // Load progress from localStorage
 window.addEventListener("load", () => {
-  const saved = localStorage.getItem("advancedArraysProgress");
+  const saved = localStorage.getItem(PROGRESS_KEY);
   if (saved) {
     completedExercises = new Set(JSON.parse(saved));
     updateProgress();
